@@ -4,10 +4,13 @@
 	<head>
 		<title>timepicker</title>
 		<meta charset="utf-8" />
+		<style>
+			.time{position: relative; top: 50px; left: 350px;}
+		</style>
 	</head>
 
 	<body>
-		<input type="text" />
+		<input type="text" class="time" />
 		
 		<script
 			src="http://code.jquery.com/jquery-3.2.1.min.js"
@@ -16,6 +19,12 @@
 		</script>
 		
 		<script src="js/timepicker.js"></script>
+		
+		<script>
+		$(function(){
+			$('.time').timepicker();
+			})
+		</script>
 	</body>
 
 </html>
