@@ -22,7 +22,13 @@
 		
 		<script>
 		$(function(){
-			$('.time').timepicker();
+			var args = {
+				separator : 'H',
+				model : 12,
+				class : 'autreClass'
+				};
+				
+			$('.time').timepicker(args);
 			})
 		</script>
 	</body>
