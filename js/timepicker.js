@@ -3,6 +3,7 @@
 		//définition des propriétées
 		var firstH = 0;
 		var prop = {
+			clock : false,
 			set separator(val){
 				this.defSeparator = (/^:|h/i.test(val)) ? val : ':';
 				},
@@ -44,12 +45,14 @@
 				}
 			};
 		
+		
 		//assignation des arguments aux propriétées
 		if(typeof args != 'undefined')
 			$.extend(prop, args);
 		
 		//initialisation des éléments
 		this.each(function(i){
+			
 			$(this)
 			.val(prop.h + prop.separator + prop.m + ((prop.model == 12) ? 'AM' : ''))
 			.attr({maxlength : (prop.model == 12) ? 7 : 5})
@@ -57,16 +60,18 @@
 			.keydown(function(e){
 				e.preventDefault();
 				
-				keyControl($(this), e.keyCode, i)
-				if(e.keyCode  < 65)
-					return;
-				inputVal($(this), e.key, i);
+				if(!prop.clock){
+					keyControl($(this), e.keyCode, i);
+					if(e.keyCode  < 65) return;
+					inputVal($(this), e.key, i);
+					}
 				})
 			.click(function(){
 				$('#ui-timepicker-' + i).show();
 				});
 			
 			createPicker($(this), i);
+			timer($(this))
 			});
 		
 		//création du picker

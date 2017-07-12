@@ -29,8 +29,6 @@
 
 .ui-timepicker option{ padding: 0 1.1em 0 .2em; }
 
-.ui-timepicker option:checked{ background: #4c9ed9; }
-
 .ui-timepicker button{
 	position: relative;
 	top: -10px;
