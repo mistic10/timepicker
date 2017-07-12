@@ -72,21 +72,21 @@
 		//création du picker
 		function createPicker(elt, i){
 			var eltsPicker = [
-					//selection de l'heure
-					numField('h', prop.model)
-					.change(function(){
-						setH(elt, $(this).val());
-						}),
-					
-					//séparation
-					$(document.createElement('span'))
-					.text(prop.separator),
-					
-					//selection des minutes
-					numField('m', 59)
-					.change(function(){
-						setM(elt, $(this).val());
-						})
+				//selection de l'heure
+				numField('h', prop.model)
+				.change(function(){
+					setH(elt, $(this).val());
+					}),
+				
+				//séparation
+				$(document.createElement('span'))
+				.text(prop.separator),
+				
+				//selection des minutes
+				numField('m', 59)
+				.change(function(){
+					setM(elt, $(this).val());
+					})
 				];
 			
 			//selection de AM/PM
@@ -122,7 +122,8 @@
 				.css({
 					position : 'absolute',
 					left : elt.offset().left,
-					top : elt.offset().top + elt.outerHeight()
+					top : elt.offset().top + elt.outerHeight(),
+					zIndex : 3
 					})
 				.hide()
 				);
