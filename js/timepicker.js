@@ -1,14 +1,14 @@
 (function($){
 	$.fn.timepicker = function(args){
-		//définition des propriétés
-		var hLen, mLen;
-		
+		var firstH = 0;
 		var prop = {
 			set separator(val){
 				this.sep = (/^:|h/i.test(val)) ? val : ':';
 				},
 			set model(val){
-				this.mod = (val == 12 || val == 24) ? val : 24;
+				if(val == 24) val --;
+				if(val == 12) firstH = 1;
+				this.mod = (val == 12 || val == 23) ? val : 23;
 				},
 			set class(val){
 				this.cla = (val.split(' ').length) ? val : 'ui-timepicker';
@@ -24,7 +24,7 @@
 				return (typeof this.sep != 'undefined') ? this.sep : ':';
 				},
 			get model(){
-				return (typeof this.mod != 'undefined') ? this.mod : 24;
+				return (typeof this.mod != 'undefined') ? this.mod : 23;
 				},
 			get class(){
 				return (typeof this.cla != 'undefined') ? this.cla : 'ui-timepicker';
@@ -50,7 +50,10 @@
 			.keydown(function(e){
 				e.preventDefault();
 				
-				inputVal($(this), e, i);
+				keyControl($(this), e.keyCode, i)
+				if(e.keyCode  < 65)
+					return;
+				inputVal($(this), e.key, i);
 				})
 			.click(function(){
 				$('#ui-timepicker-' + i).show();
@@ -70,7 +73,7 @@
 					.text(prop.separator),
 					
 					//selection des minutes
-					numField('m', 60)
+					numField('m', 59)
 				];
 			
 			//selection de AM/PM
@@ -119,78 +122,162 @@
 			.addClass('picker-' + selType)
 			.append(optGroupElt);
 			
-			for(var i = 0; i <= maxNum; i ++){
+			
+			
+			for(var i = (selType == 'h') ? firstH : 0; i <= maxNum; i ++){
 				optGroupElt.append(
 					$(document.createElement('option'))
 					.attr({selected : i == prop[selType]})
-					.text(i)
+					.text(goodLength(String(i)))
 					);
 				}
 			
 			return numElt;
 			}
 		
+		//modification de l'heure du input
+		function setH(elt, h){
+			h = Number(h);
+			
+			if(h > prop.model)
+				h = prop.model;
+			else if(h < firstH)
+				h = firstH;
+			
+			elt.val(elt.val().replaceAt(0, goodLength(String(h))));
+			}
+		
+		//récupération de l'heure du input
+		function getH(elt, inStr){
+			var h = elt.val().substr(0, 2);
+			
+			if(inStr) return h;
+			return Number(h);
+			}
+		
+		//modification des minutes du input
+		function setM(elt, m){
+			m = Number(m);
+			
+			if(m > 59)
+				m = 59;
+			else if(m < 0)
+				m = 0;
+			
+			elt.val(elt.val().replaceAt(3, goodLength(String(m))));
+			}
+		
+		//récupération des minutes du input
+		function getM(elt, inStr){
+			var m = elt.val().substr(3, 2);
+			
+			if(inStr) return m;
+			return Number(m);
+			}
+		
+		//mise a la bonne taille des str 'h' et 'm'
+		function goodLength(str){
+			if(str.length < 2)
+				str = '0' + str;
+			else if(str.length > 2)
+				str = str.substr(0, 2);
+			
+			return str;
+			}
+		
+		function setMeridiem(elt, mer){
+			elt.val(elt.val().replaceAt(5, mer.toUpperCase()));
+			}
+		
+		function getMeridiem(elt){
+			return elt.val().substr(5, 2);
+			}
+		
+		//gestion du input par les flèches du clavier
+		function keyControl(elt, keyCode, i){
+			var start = elt[0].selectionStart;
+			if(keyCode == 38 || keyCode == 40){
+				if(start < 3)
+						var h = getH(elt);
+				else
+						var m = getM(elt);
+				}
+			
+			switch(keyCode){
+				case 38:
+					if(start < 3)
+						h ++;
+					else if(start < 5)
+						m ++;
+					else if(prop.model == 12)
+						setMeridiem(elt, 'am');
+					break;
+				case 40:
+					if(start < 3)
+						h --;
+					else if(start < 5)
+						m --;
+					else if(prop.model == 12)
+						setMeridiem(elt, 'pm');
+					break;
+				case 39:
+					elt[0].selectionStart ++;
+					break;
+				case 37:
+					elt[0].selectionStart --;
+					elt[0].selectionEnd --;
+					break;
+				}
+			
+			if(keyCode == 38 || keyCode == 40){
+				if(start < 3){
+					setH(elt, h);
+					$('#ui-timepicker-' + i + ' .picker-h').val(getH(elt, true));
+					}
+				else if(start < 5){
+					setM(elt, m);
+					$('#ui-timepicker-' + i + ' .picker-m').val(getM(elt, true));
+					}
+				else if(prop.model == 12)
+					$('#ui-timepicker-' + i + ' select:last').val(getMeridiem(elt));
+				elt[0].selectionStart = elt[0].selectionEnd = start;
+				}
+			}
+		
 		//interaction depuis le input
-		function inputVal(elt, e, i){
-			var key = e.key;
-			if(/\D/.test(key) && !/a|p|m/i.test(key))
+		function inputVal(elt, key, i){
+			if(/\D/.test(key) && !/a|p|/i.test(key))
 				return;
 			
 			var start = elt[0].selectionStart;
 			switch(start){
 				case 0:
-					if(/a|p|m/i.test(e.key)) return;
-					
-					key = (prop.model == 12) ? (key > 1) ? '1' : key  : (key > 2) ? 2 : key ;
-					elt.val(elt.val().replaceAt(start, key));
-					start ++;
-					
-					if(prop.model == 12 && key == '1'){
-						if(elt.val()[start] > 2)
-							elt.val(elt.val().replaceAt(start, '2'));
-						}
-					else if(prop.model == 24 && key == '2'){
-						if(elt.val()[start] > 4)
-							elt.val(elt.val().replaceAt(start, '4'));
-						}
-					
-					$('#ui-timepicker-' + i + ' .picker-h').val(parseInt(elt.val()[start - 1] + elt.val()[start], 10));
-					break;
 				case 1:
-					if(/a|p|m/i.test(e.key)) return;
-					
-					key = (prop.model == 12) ? (elt.val()[start-1] == 1 && key > 2) ? '2' : key : (elt.val()[start-1] == 2 && key > 4) ? '4' : key;
-					elt.val(elt.val().replaceAt(start, key));
-					
-					$('#ui-timepicker-' + i + ' .picker-h').val(parseInt(elt.val()[start - 1] + elt.val()[start], 10));
+					if(/^a|p$/i.test(key)) return;
+					var h = getH(elt, true);
+					h = h.replaceAt(start, key);
+					setH(elt, h);
+					$('#ui-timepicker-' + i + ' .picker-h').val(getH(elt, true));
 					start ++;
 					break;
 				case 2:
 					start ++;
 				case 3:
-					if(/a|p|m/i.test(e.key)) return;
-					
-					elt.val(elt.val().replaceAt(start, (key > 6) ? 6 : key));
-					start ++;
-					if(key == 6) elt.val(elt.val().replaceAt(start, '0'));
-					$('#ui-timepicker-' + i + ' .picker-m').val(parseInt(elt.val()[start - 1] + elt.val()[start], 10));
-					break;
+					var index = 0;
 				case 4:
-					if(/a|p|m/i.test(e.key)) return;
-					
-					if(elt.val()[start - 1] == 6) key = '0';
-					elt.val(elt.val().replaceAt(start, key));
-					$('#ui-timepicker-' + i + ' .picker-m').val(parseInt(elt.val()[start - 1] + elt.val()[start], 10));
+					if(/^a|p$/i.test(key)) return;
+					if(start == 4) var index = 1;
+					var m = getM(elt, true);
+					m = m.replaceAt(index, key);
+					setM(elt, m);
+					$('#ui-timepicker-' + i + ' .picker-m').val(getM(elt, true));
 					start ++;
 					break;
 				case 5:
-					if(prop.model == 24 || !/a|p/i.test(key)) return;
-					elt.val(elt.val().replaceAt(start, key.toUpperCase()));
-					$('#ui-timepicker-' + i + ' select:last').val(key.toUpperCase() + 'M');
-					start ++;
-					break;
+					if(prop.model != 12 || !/a|p/i.test(key)) return;
+					setMeridiem(elt, key);
+					$('#ui-timepicker-' + i + ' select:last').val(getMeridiem(elt));
 				case 6:
-					if(prop.model == 24 || !/m/i.test(key)) return;
 					start ++;
 					break;
 				}
