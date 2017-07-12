@@ -1,0 +1,47 @@
+.ui-timepicker{
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	
+	border: 1px solid #aaaaaa;
+	background: #ffffff url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/images/ui-bg_glass_75_ffffff_1x400.png) 0 0 repeat-x;
+	padding: .2em .2em;
+	margin: .1em 0;
+	
+	font-family: Verdana,Arial,sans-serif;
+	font-weight: bold;
+	font-size: 1.1em;
+	color: #222222;
+	}
+
+.ui-timepicker select{
+	border: 1px solid #d3d3d3;
+	background: #e6e6e6 url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/images/ui-bg_glass_75_e6e6e6_1x400.png) 0 50% repeat-x;
+	
+	
+	font-weight: normal;
+	font-size: .9em;
+	color: #222222;
+	}
+
+.ui-timepicker select, .ui-timepicker span, .ui-timepicker button{ margin: 0 .2em; }
+
+.ui-timepicker optgroup{ max-height: 6.8em; }
+
+.ui-timepicker option{ padding: 0 1.1em 0 .2em; }
+
+.ui-timepicker option:checked{ background: #4c9ed9; }
+
+.ui-timepicker button{
+	position: relative;
+	top: -10px;
+	width: 16px;
+	height: 16px;
+	
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	
+	border: 1px solid #d3d3d3;
+	
+	background: #ffffff url(http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/images/ui-icons_222222_256x240.png);
+	background-position: -81px -129px;
+	}
