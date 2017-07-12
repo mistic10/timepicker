@@ -1,17 +1,21 @@
 (function($){
 	$.fn.timepicker = function(args){
+		//définition des propriétées
 		var firstH = 0;
 		var prop = {
 			set separator(val){
-				this.sep = (/^:|h/i.test(val)) ? val : ':';
+				this.defSeparator = (/^:|h/i.test(val)) ? val : ':';
 				},
 			set model(val){
 				if(val == 24) val --;
 				if(val == 12) firstH = 1;
-				this.mod = (val == 12 || val == 23) ? val : 23;
+				this.defModel = (val == 12 || val == 23) ? val : 23;
 				},
 			set class(val){
-				this.cla = (val.split(' ').length) ? val : 'ui-timepicker';
+				this.defClass = (val.split(' ').length) ? val : 'ui-timepicker';
+				},
+			set step(val){
+				this.defStep = (val < 30) ? val : 30;
 				},
 			set h(val){
 				this.defH = (val.length == 2) ? val.replace(/\D/, '0') : (val.length < 2) ? '0' + val.replace(/\D/, '0') : val.replace(/\D/, '0').substr(0, 2);
@@ -21,13 +25,16 @@
 				},
 			
 			get separator(){
-				return (typeof this.sep != 'undefined') ? this.sep : ':';
+				return (typeof this.defSeparator != 'undefined') ? this.defSeparator : ':';
 				},
 			get model(){
-				return (typeof this.mod != 'undefined') ? this.mod : 23;
+				return (typeof this.defModel != 'undefined') ? this.defModel : 23;
 				},
 			get class(){
-				return (typeof this.cla != 'undefined') ? this.cla : 'ui-timepicker';
+				return (typeof this.defClass != 'undefined') ? this.defClass : 'ui-timepicker';
+				},
+			get step(){
+				return (typeof this.defStep != 'undefined') ? this.defStep : 1;
 				},
 			get h(){
 				return (typeof this.defH != 'undefined') ? (this.defH > this.model) ? this.model : this.defH : '00';
@@ -37,7 +44,7 @@
 				}
 			};
 		
-		//assignation des arguments aux propriétés
+		//assignation des arguments aux propriétées
 		if(typeof args != 'undefined')
 			$.extend(prop, args);
 		
@@ -66,7 +73,10 @@
 		function createPicker(elt, i){
 			var eltsPicker = [
 					//selection de l'heure
-					numField('h', prop.model),
+					numField('h', prop.model)
+					.change(function(){
+						setH(elt, $(this).val());
+						}),
 					
 					//séparation
 					$(document.createElement('span'))
@@ -74,12 +84,16 @@
 					
 					//selection des minutes
 					numField('m', 59)
+					.change(function(){
+						setM(elt, $(this).val());
+						})
 				];
 			
 			//selection de AM/PM
 			if(prop.model == 12){
 				eltsPicker.push(
 					$(document.createElement('select'))
+					.addClass('picker-meridiem')
 					.append([
 						$(document.createElement('option'))
 						.text('AM'),
@@ -124,7 +138,7 @@
 			
 			
 			
-			for(var i = (selType == 'h') ? firstH : 0; i <= maxNum; i ++){
+			for(var i = (selType == 'h') ? firstH : 0; i <= maxNum; i = (selType == 'h') ? i + 1 : i +  prop.step){
 				optGroupElt.append(
 					$(document.createElement('option'))
 					.attr({selected : i == prop[selType]})
@@ -207,8 +221,8 @@
 				case 38:
 					if(start < 3)
 						h ++;
-					else if(start < 5)
-						m ++;
+					else if(start < 5 && m + prop.step < 59)
+						m = m + prop.step;
 					else if(prop.model == 12)
 						setMeridiem(elt, 'am');
 					break;
@@ -216,7 +230,7 @@
 					if(start < 3)
 						h --;
 					else if(start < 5)
-						m --;
+						m = m - prop.step;
 					else if(prop.model == 12)
 						setMeridiem(elt, 'pm');
 					break;
@@ -239,7 +253,7 @@
 					$('#ui-timepicker-' + i + ' .picker-m').val(getM(elt, true));
 					}
 				else if(prop.model == 12)
-					$('#ui-timepicker-' + i + ' select:last').val(getMeridiem(elt));
+					$('#ui-timepicker-' + i + ' .picker-meridiem').val(getMeridiem(elt));
 				elt[0].selectionStart = elt[0].selectionEnd = start;
 				}
 			}
@@ -269,6 +283,7 @@
 					if(start == 4) var index = 1;
 					var m = getM(elt, true);
 					m = m.replaceAt(index, key);
+					if(!$('#ui-timepicker-' + i + ' .picker-m option:contains("' + m + '")').length) return;
 					setM(elt, m);
 					$('#ui-timepicker-' + i + ' .picker-m').val(getM(elt, true));
 					start ++;
@@ -276,7 +291,7 @@
 				case 5:
 					if(prop.model != 12 || !/a|p/i.test(key)) return;
 					setMeridiem(elt, key);
-					$('#ui-timepicker-' + i + ' select:last').val(getMeridiem(elt));
+					$('#ui-timepicker-' + i + ' .picker-meridiem').val(getMeridiem(elt));
 				case 6:
 					start ++;
 					break;
