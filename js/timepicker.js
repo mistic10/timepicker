@@ -1,6 +1,7 @@
 (function($){
 	$.fn.timepicker = function(args){
 		//définition des propriétées
+		var objDate = new Date();
 		var firstH = 0;
 		var prop = {
 			clock : false,
@@ -52,6 +53,12 @@
 		
 		//initialisation des éléments
 		this.each(function(i){
+			if(prop.clock){
+				var elt = $(this);
+				setInterval(function(){timer(elt)}, 1000);
+				prop.h = goodLength(String(objDate.getHours()));
+				prop.m = goodLength(String(objDate.getMinutes()));
+				}
 			
 			$(this)
 			.val(prop.h + prop.separator + prop.m + ((prop.model == 12) ? 'AM' : ''))
@@ -71,8 +78,30 @@
 				});
 			
 			createPicker($(this), i);
-			timer($(this))
 			});
+		
+		function timer(elt){
+			objDate.setSeconds(objDate.getSeconds() + 1);
+			var time = curTime();
+			
+			setH(elt, time[0]);
+			setM(elt, time[1]);
+			if(prop.model == 12)
+				setMeridiem(elt, time[3]);
+			}
+		
+		function curTime(){
+			if(prop.model == 12){
+				var time = objDate.toLocaleTimeString("en-US").split(':');
+				var sTime = time[2].split(' ');
+				time[2] = sTime[0];
+				time[3] = sTime[1];
+				}
+			else{
+				var time = [objDate.getHours(), objDate.getMinutes(), objDate.getSeconds(), ];
+				}
+			return time;
+			}
 		
 		//création du picker
 		function createPicker(elt, i){
@@ -227,7 +256,7 @@
 				case 38:
 					if(start < 3)
 						h ++;
-					else if(start < 5 && m + prop.step < 59)
+					else if(start < 5 && m + prop.step <= 59)
 						m = m + prop.step;
 					else if(prop.model == 12)
 						setMeridiem(elt, 'am');
