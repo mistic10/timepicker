@@ -53,13 +53,6 @@
 		
 		//initialisation des éléments
 		this.each(function(i){
-			if(prop.clock){
-				var elt = $(this);
-				setInterval(function(){timer(elt)}, 1000);
-				prop.h = goodLength(String(objDate.getHours()));
-				prop.m = goodLength(String(objDate.getMinutes()));
-				}
-			
 			$(this)
 			.val(prop.h + prop.separator + prop.m + ((prop.model == 12) ? 'AM' : ''))
 			.attr({maxlength : (prop.model == 12) ? 7 : 5})
@@ -76,6 +69,12 @@
 			.click(function(){
 				$('#ui-timepicker-' + i).show();
 				});
+			
+			if(prop.clock){
+				var elt = $(this);
+				timer(elt);
+				setInterval(function(){timer(elt)}, 1000);
+				}
 			
 			createPicker($(this), i);
 			});
